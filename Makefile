@@ -3,9 +3,6 @@ VERSION=17.03.1
 all:
 	$(MAKE) -C src
 
-mac:
-	$(MAKE) -C src mac
-
 android:
 	$(MAKE) -C src android
 

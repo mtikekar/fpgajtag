@@ -16,6 +16,9 @@ or
 To make android version:
     make android
 
+For FTDI-based devices on Mac OSX, you may need to unload Apple's driver
+before running fpgajtag:
+    sudo kextunload -b com.apple.driver.AppleUSBFTDI
 
 In the util directory, there are 2 tools:
    1) dumpbit: formatted dump of xilinx bit file
