@@ -588,8 +588,33 @@ uint32_t read_inputfile(const char *filename)
      * Step 5: Check Device ID
      */
     /*** Read device id from file to be programmed           ***/
+    uint8_t *config_ptr = input_fileptr;
+    static uint8_t sync_word[] = {0xaa, 0x99, 0x55, 0x66};
+    while (memcmp(config_ptr, sync_word, sizeof(sync_word)) != 0) {
+        config_ptr++;
+    }
+    config_ptr += 4;
+    static uint8_t write_idcode_cmd[] = {0x30, 0x01, 0x80, 0x01};
+    uint8_t packet_type;
+    int word_count;
+
+    while (memcmp(config_ptr, write_idcode_cmd, sizeof(write_idcode_cmd))) {
+        packet_type = (*config_ptr) >> 5;
+
+        if (packet_type == 1)
+            word_count = 0x7ff & ((config_ptr[2] << 8) + config_ptr[3]);
+        else if (packet_type == 2)
+            word_count = 0;
+        else {
+            fprintf(stderr, "[%s:%d] bad packet type %d\n", __FUNCTION__, __LINE__, packet_type);
+            exit(-1);
+        }
+
+        config_ptr += 4 + 4*word_count;
+    }
+
     uint32_t tempidcode;
-    memcpy(&tempidcode, input_fileptr+0x80, sizeof(tempidcode));
+    memcpy(&tempidcode, config_ptr + 4, sizeof(tempidcode));
     tempidcode = (M(tempidcode) << 24) | (M(tempidcode >> 8) << 16) | (M(tempidcode >> 16) << 8) | M(tempidcode >> 24);
     return tempidcode;
 badlen:
